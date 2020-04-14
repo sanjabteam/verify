@@ -100,7 +100,7 @@ class Verify
             ];
         }
 
-        $log->update(['count' => PHP_INT_MAX]);
+        $log->update(['count' => 2147483647]);
         $log->save();
 
         return ['success' => true, 'message' => trans('verify::verify.verified_successfully')];
