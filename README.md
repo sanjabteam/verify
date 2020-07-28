@@ -91,8 +91,9 @@ You can also verify it manually.
 ```php
 use Verify;
 
-if (Verify::verify($request->input('mobile'), $request->input('code')) == false) {
-    // Show error
+$result = Verify::verify($request->input('mobile'), $request->input('code'));
+if ($result['success'] == false) {
+    // Show error $result['message']
 }
 ```
 > Note: You can verify a code just once. so if you need to check code in two different requests then you should use something like the session to handle that.
