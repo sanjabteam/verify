@@ -5,11 +5,11 @@ namespace SanjabVerify\Contracts;
 interface VerifyMethod
 {
     /**
-     * Send verify code to reciver.
+     * Send verify code to receiver.
      *
-     * @param string $reciver
+     * @param string $receiver
      * @param string $code
      * @return bool
      */
-    public function send(string $reciver, string $code);
+    public function send(string $receiver, string $code);
 }

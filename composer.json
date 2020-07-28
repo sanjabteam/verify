@@ -1,6 +1,6 @@
 {
     "name": "sanjabteam/verify",
-    "description": "Verify users mobile number by sms.",
+    "description": "Verify users mobile number by one time password.",
     "keywords": [
         "sanjabteam",
         "verify"
@@ -17,6 +17,7 @@
     ],
     "require": {
         "php": "^7.2.5",
+        "doctrine/dbal": "^2.10",
         "illuminate/support": "^6|^7"
     },
     "require-dev": {
@@ -39,7 +40,8 @@
 
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "bin-compat": "full"
     },
     "extra": {
         "laravel": {

@@ -16,7 +16,7 @@ class CreateSanjabVerifiesTable extends Migration
         Schema::create('sanjab_verifies', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('method');
-            $table->string('reciver')->index();
+            $table->string('receiver')->index();
             $table->string('ip');
             $table->string('agent');
             $table->string('code');

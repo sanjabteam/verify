@@ -24,15 +24,14 @@ class VerifyServiceProvider extends ServiceProvider
             __DIR__.'/../resources/lang' => resource_path('lang/vendor/verify'),
         ], 'lang');
 
-        Validator::extend('sanjab_verify', function ($attribute, $value, $parameters, $validator) {
-            if (isset($validator->getData()[$parameters[0] ?? 'reciver']) && !empty($validator->getData()[$parameters[0]])) {
-                $result = app(Verify::class)->verify($validator->getData()[$parameters[0] ?? 'reciver'], $value);
+        Validator::extend('sanjab_verify', function ($attribute, $value, $parameters = [], $validator = null) {
+            if (isset($validator->getData()[$parameters[0] ?? 'receiver']) && !empty($validator->getData()[$parameters[0]])) {
+                $result = app(Verify::class)->verify($validator->getData()[$parameters[0] ?? 'receiver'], $value);
                 App::singleton('sanjab_verify_validation_message', function () use ($result) {
                     return $result['message'];
                 });
                 return $result['success'];
             }
-            return false;
         });
         Validator::replacer('sanjab_verify', function ($message) {
             return app('sanjab_verify_validation_message');

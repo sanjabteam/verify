@@ -12,15 +12,15 @@ class Verify
     /**
      * Request a new code.
      *
-     * @property string $reciver    reciver of code
+     * @property string $receiver    receiver of code
      * @property string $method     method of sending code
      * @return array
      * @example ['success' => true, 'message' => '...']
      */
-    public function request(string $reciver, string $method = null)
+    public function request(string $receiver, string $method = null)
     {
         VerifyLog::where('created_at', '<', now()->subDay())->delete();
-        $lastestLog = VerifyLog::where('ip', request()->ip())->orWhere('reciver', $reciver)->latest()->first();
+        $lastestLog = VerifyLog::where('ip', request()->ip())->orWhere('receiver', $receiver)->latest()->first();
         if ($lastestLog) {
             if ($lastestLog->created_at->gt(now()->subSeconds(config('verify.resend_delay')))) {
                 return [
@@ -32,8 +32,8 @@ class Verify
                 ];
             }
             if (VerifyLog::where('created_at', '>', now()->subHour())
-                ->where(function ($query) use ($reciver) {
-                    $query->where('ip', request()->ip())->orWhere('reciver', $reciver);
+                ->where(function ($query) use ($receiver) {
+                    $query->where('ip', request()->ip())->orWhere('receiver', $receiver);
                 })->count() > config('verify.max_resends.per_ip') ||
                 (is_array(session('sanjab_verify')) && count(array_filter(session('sanjab_verify'), function ($time) {
                     return $time > time() - 3600;
@@ -47,13 +47,13 @@ class Verify
             throw new Exception('Verify method is not instance of SanjabVerify\Contracts\VerifyMethod.');
         }
         $code = $this->generate();
-        if ($verifyMethod->send($reciver, $code)) {
+        if ($verifyMethod->send($receiver, $code)) {
             VerifyLog::create([
-                'ip'      => request()->ip(),
-                'agent'   => request()->userAgent(),
-                'reciver' => $reciver,
-                'code'    => $code,
-                'method'  => $method,
+                'ip'       => request()->ip(),
+                'agent'    => request()->userAgent(),
+                'receiver' => $receiver,
+                'code'     => $code,
+                'method'   => $method,
             ]);
             Session::push('sanjab_verify', time());
             return ['success' => true, 'message' => trans('verify::verify.sent_successfully')];
@@ -64,14 +64,14 @@ class Verify
     /**
      * Request a new code.
      *
-     * @property string $reciver    reciver of code
+     * @property string $receiver    receiver of code
      * @property string $code       code input value
      * @return array
      * @example ['success' => true, 'message' => '...']
      */
-    public function verify(string $reciver, string $code)
+    public function verify(string $receiver, string $code)
     {
-        $log = VerifyLog::where('reciver', $reciver)->latest()->first();
+        $log = VerifyLog::where('receiver', $receiver)->latest()->first();
         if ($log == null || $log->created_at->diffInMinutes() > config('verify.expire_in')) {
             return [
                 'success' => false,
