@@ -1,6 +1,6 @@
 <h1 align="center">Sanjab Verify</h1>
 
-<p align="center">
+<div align="center">
 
 [![Latest Stable Version](https://poser.pugx.org/sanjabteam/verify/v/stable)](https://packagist.org/packages/sanjabteam/verify)
 [![Total Downloads](https://poser.pugx.org/sanjabteam/verify/downloads)](https://packagist.org/packages/sanjabteam/verify)
@@ -9,9 +9,9 @@
 [![Code Coverage](https://codecov.io/gh/sanjabteam/verify/branch/master/graph/badge.svg?sanitize=true)](https://codecov.io/gh/sanjabteam/verify)
 [![License](https://poser.pugx.org/sanjabteam/verify/license)](https://packagist.org/packages/sanjabteam/verify)
 
-</p>
+</div>
 
-Verify your user mobile/email with one time password.
+Verify your user mobile/email with a one-time password.
 
 ## Installation
 
@@ -38,12 +38,12 @@ php artisan vendor:publish --provider=SanjabVerify\VerifyServiceProvider
 
 `max_resends`: Maximum resends in one hour.
 
-* `per_session`: Maximum resends in one hour based on user session. (Limitation: if user clear cookie)
-* `per_ip`: Maximum resends in one hour based on user ip. (Limitation: If two different user use one proxy)
+* `per_session`: Maximum resends in one hour based on the user session. (Limitation: if user clear cookie)
+* `per_ip`: Maximum resends in one hour based on user IP. (Limitation: If two different user use one proxy)
 
 ## Usage
 
-### Send code to user
+### Send code to the user
 
 ```php
 use Verify;
@@ -87,7 +87,7 @@ $request->validate([
 ```
 > `mobile` is your receiver which in this case is mobile.
 
-You can also verify manually.
+You can also verify it manually.
 ```php
 use Verify;
 
@@ -95,7 +95,18 @@ if (Verify::verify($request->input('mobile'), $request->input('code')) == false)
     // Show error
 }
 ```
-> Note: You can verify a code just once. so if you need to check code in two different requests then you should use something like session to handle that.
+> Note: You can verify a code just once. so if you need to check code in two different requests then you should use something like the session to handle that.
+
+## Contributing
+
+Contributions are welcome!
+
+* Fork the Project
+* Clone your project (git clone https://github.com/your_username/verify.git)
+* Create new branch (git checkout -b your_feature)
+* Commit your Changes (git commit -m 'new feature')
+* Push to the Branch (git push origin your_feature)
+* Open a Pull Request
 
 ## License
 
