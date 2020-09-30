@@ -18,7 +18,7 @@
     "require": {
         "php": "^7.2.5",
         "doctrine/dbal": "^2.10",
-        "illuminate/support": "^6|^7"
+        "illuminate/support": "^6|^7|^8"
     },
     "require-dev": {
         "orchestra/testbench": "3.8.*|^4|^5.1",
