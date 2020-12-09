@@ -4,8 +4,8 @@
 
 [![Latest Stable Version](https://poser.pugx.org/sanjabteam/verify/v/stable)](https://packagist.org/packages/sanjabteam/verify)
 [![Total Downloads](https://poser.pugx.org/sanjabteam/verify/downloads)](https://packagist.org/packages/sanjabteam/verify)
-[![Build Status](https://travis-ci.com/sanjabteam/verify.svg?branch=master)](https://travis-ci.com/sanjabteam/verify)
-[![Code Style](https://github.styleci.io/repos/214197383/shield)](https://github.styleci.io/repos/214197383)
+[![Build Status](https://github.com/sanjabteam/verify/workflows/tests/badge.svg)](https://github.com/sanjabteam/verify/actions)
+[![Code Style](https://github.styleci.io/repos/214197383/shield?style=flat)](https://github.styleci.io/repos/214197383)
 [![Code Coverage](https://codecov.io/gh/sanjabteam/verify/branch/master/graph/badge.svg?sanitize=true)](https://codecov.io/gh/sanjabteam/verify)
 [![License](https://poser.pugx.org/sanjabteam/verify/license)](https://packagist.org/packages/sanjabteam/verify)
 
