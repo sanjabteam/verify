@@ -16,8 +16,8 @@
         }
     ],
     "require": {
-        "php": "^7.2.5",
-        "doctrine/dbal": "^2.10",
+        "php": "^7.3|^8",
+        "doctrine/dbal": "^2",
         "illuminate/support": "^6|^7|^8"
     },
     "require-dev": {
