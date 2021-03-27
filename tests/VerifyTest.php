@@ -59,6 +59,11 @@ class VerifyTest extends TestCase
         $this->assertTrue($result['success']);
 
         $this->assertTrue(Validator::make(
+            ['code' => rand(100, 999), 'reciver' => ''],
+            ['code' => 'required|sanjab_verify:reciver']
+        )->fails());
+
+        $this->assertTrue(Validator::make(
             ['code' => rand(100, 999), 'reciver' => '1234567890'],
             ['code' => 'required|sanjab_verify:reciver']
         )->fails());
