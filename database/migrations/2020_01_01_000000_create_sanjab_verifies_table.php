@@ -18,7 +18,7 @@ class CreateSanjabVerifiesTable extends Migration
             $table->string('method');
             $table->string('receiver')->index();
             $table->string('ip');
-            $table->string('agent');
+            $table->text('agent')->nullable();
             $table->string('code');
             $table->unsignedInteger('count')->default(0);
             $table->timestamps();
