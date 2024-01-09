@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use InvalidArgumentException;
 use Orchestra\Testbench\TestCase;
 use SanjabVerify\Models\VerifyLog;
 use SanjabVerify\Support\Facades\Verify;
@@ -113,7 +114,7 @@ class VerifyTest extends TestCase
 
     public function testInvalidVerifyMethod()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(InvalidArgumentException::class);
         $result = Verify::request('1234567890', Session::class);
     }
 
@@ -140,12 +141,12 @@ class VerifyTest extends TestCase
         $app['config']->set(
             'verify.code',
             [
-                'length' => 6,
+                'length'         => 6,
                 'case_sensitive' => false,
-                'numbers' => true,
-                'upper_case' => true,
-                'lower_case' => true,
-                'symbols' => true,
+                'numbers'        => true,
+                'upper_case'     => true,
+                'lower_case'     => true,
+                'symbols'        => true,
             ]
         );
     }
@@ -160,7 +161,7 @@ class VerifyTest extends TestCase
     protected function getPackageAliases($app)
     {
         return [
-            'Verify' => \SanjabVerify\Support\Facades\Verify::class
+            'Verify' => \SanjabVerify\Support\Facades\Verify::class,
         ];
     }
 
