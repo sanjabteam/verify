@@ -51,8 +51,8 @@ use App\Helpers\SmsVerifyMethod;
 
 $result = Verify::request($request->input('mobile'), SmsVerifyMethod::class);
 
-if ($result['success'] == false) { // If user exceed limitation
-    return redirect()->back()->with('error', $result['message']); // Show error message
+if ($result->success == false) { // If user exceed limitation
+    return redirect()->back()->with('error', $result->message); // Show error message
 }
 ```
 
@@ -92,8 +92,8 @@ You can also verify it manually.
 use Verify;
 
 $result = Verify::verify($request->input('mobile'), $request->input('code'));
-if ($result['success'] == false) {
-    // Show error $result['message']
+if ($result->success == false) {
+    // Show error $result->message
 }
 ```
 > Note: You can verify a code just once. so if you need to check code in two different requests then you should use something like the session to handle that.

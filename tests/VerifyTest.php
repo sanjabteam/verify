@@ -7,56 +7,73 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use InvalidArgumentException;
 use Orchestra\Testbench\TestCase;
 use SanjabVerify\Models\VerifyLog;
 use SanjabVerify\Support\Facades\Verify;
 use SanjabVerify\Tests\Classes\TestVerifyMethod;
+use SanjabVerify\VerificationResponse;
 
 class VerifyTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->loadMigrationsFrom(realpath(__DIR__ . '/../database/migrations'));
+    }
     public function testSend()
     {
         App::instance('sanjab_test_result', false);
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.send_failed'));
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertFalse($result->success);
+        $this->assertEquals($result->message, trans('verify::verify.send_failed'));
 
         App::instance('sanjab_test_result', true);
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertTrue($result->success);
 
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.resend_wait', ['seconds' => 120]));
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertFalse($result->success);
+        $this->assertEquals($result->message, trans('verify::verify.resend_wait', ['seconds' => 120]));
         VerifyLog::query()->update(['created_at' => now()->subMinutes(3)]);
 
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertTrue($result->success);
 
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.resend_wait', ['seconds' => 120]));
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertFalse($result->success);
+        $this->assertEquals($result->message, trans('verify::verify.resend_wait', ['seconds' => 120]));
         VerifyLog::query()->update(['created_at' => now()->subMinutes(3)]);
 
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.too_many_requests'));
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertFalse($result->success);
+        $this->assertEquals($result->message, trans('verify::verify.too_many_requests'));
 
         Session::flush();
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertTrue($result->success);
         VerifyLog::query()->update(['created_at' => now()->subMinutes(3)]);
 
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.too_many_requests'));
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertFalse($result->success);
+        $this->assertEquals($result->message, trans('verify::verify.too_many_requests'));
     }
 
     public function testVerify()
     {
         App::instance('sanjab_test_result', true);
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertTrue($result->success);
 
         $this->assertTrue(Validator::make(
             ['code' => rand(100, 999), 'reciver' => ''],
@@ -80,40 +97,50 @@ class VerifyTest extends TestCase
 
         VerifyLog::query()->delete();
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertTrue($result->success);
 
         foreach (range(0, 2) as $range) {
             $result = Verify::verify('1234567890', rand(100, 900));
-            $this->assertFalse($result['success']);
-            $this->assertEquals($result['message'], trans('verify::verify.code_is_wrong'));
+            $this->assertInstanceOf(VerificationResponse::class, $result);
+            $this->assertFalse($result->success);
+            $this->assertEquals($result->message, trans('verify::verify.code_is_wrong'));
         }
 
         $result = Verify::verify('1234567890', rand(100, 900));
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.code_attempt_limited', ['count' => config('verify.max_attemps')]));
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertFalse($result->success);
+        $this->assertEquals(
+            $result->message,
+            trans('verify::verify.code_attempt_limited', ['count' => config('verify.max_attemps')])
+        );
 
         VerifyLog::query()->delete();
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertTrue($result->success);
         VerifyLog::latest()->update(['created_at' => now()->subHour(1)]);
 
         $result = Verify::verify('1234567890', app('sanjab_test')['code']);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.code_expired'));
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertFalse($result->success);
+        $this->assertEquals($result->message, trans('verify::verify.code_expired'));
 
         VerifyLog::query()->delete();
         $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertTrue($result->success);
         request()->server->set('REMOTE_ADDR', '1.2.3.4');
 
         $result = Verify::verify('1234567890', app('sanjab_test')['code']);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.code_is_not_yours'));
+        $this->assertInstanceOf(VerificationResponse::class, $result);
+        $this->assertFalse($result->success);
+        $this->assertEquals($result->message, trans('verify::verify.code_is_not_yours'));
     }
 
     public function testInvalidVerifyMethod()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(InvalidArgumentException::class);
         $result = Verify::request('1234567890', Session::class);
     }
 
@@ -140,27 +167,20 @@ class VerifyTest extends TestCase
         $app['config']->set(
             'verify.code',
             [
-                'length' => 6,
+                'length'         => 6,
                 'case_sensitive' => false,
-                'numbers' => true,
-                'upper_case' => true,
-                'lower_case' => true,
-                'symbols' => true,
+                'numbers'        => true,
+                'upper_case'     => true,
+                'lower_case'     => true,
+                'symbols'        => true,
             ]
         );
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->loadMigrationsFrom(realpath(__DIR__.'/../database/migrations'));
     }
 
     protected function getPackageAliases($app)
     {
         return [
-            'Verify' => \SanjabVerify\Support\Facades\Verify::class
+            'Verify' => \SanjabVerify\Support\Facades\Verify::class,
         ];
     }
 
