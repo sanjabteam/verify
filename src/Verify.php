@@ -15,7 +15,7 @@ class Verify
      *
      * @property string $receiver    receiver of code
      * @property string $method     method of sending code
-     * @return array
+     * @return VerificationResponse
      * @example ['success' => true, 'message' => '...']
      */
     public function request(string $receiver, string $method = null)
@@ -39,9 +39,10 @@ class Verify
                 'method'   => $method,
             ]);
             Session::push('sanjab_verify', time());
-            return ['success' => true, 'message' => trans('verify::verify.sent_successfully')];
+            return new VerificationResponse(true, trans('verify::verify.sent_successfully'));
+
         }
-        return ['success' => false, 'message' => trans('verify::verify.send_failed')];
+        return new VerificationResponse(false, trans('verify::verify.send_failed'));
     }
 
     /**
@@ -49,44 +50,47 @@ class Verify
      *
      * @property string $receiver    receiver of code
      * @property string $code       code input value
-     * @return array
+     * @return VerificationResponse
      * @example ['success' => true, 'message' => '...']
      */
     public function verify(string $receiver, string $code)
     {
         $log = VerifyLog::where('receiver', $receiver)->latest()->first();
-        if (null === $log  || $log->created_at->diffInMinutes() > config('verify.expire_in')) {
-            return [
-                'success' => false,
-                'message' => trans('verify::verify.code_expired'),
-            ];
+        if (null === $log || $log->created_at->diffInMinutes() > config('verify.expire_in')) {
+            return new VerificationResponse(
+                false,
+                trans('verify::verify.code_expired'),
+            );
         }
         if ($log->count > config('verify.max_attemps')) {
-            return [
-                'success' => false,
-                'message' => trans('verify::verify.code_attempt_limited', ['count' => config('verify.max_attemps')]),
-            ];
+            return new VerificationResponse(
+                false,
+                trans('verify::verify.code_attempt_limited', ['count' => config('verify.max_attemps')]),
+            );
+
         }
         if ($log->ip !== request()->ip() || $log->agent !== request()->userAgent()) {
-            return [
-                'success' => false,
-                'message' => trans('verify::verify.code_is_not_yours'),
-            ];
+            return new VerificationResponse(
+                false,
+                trans('verify::verify.code_is_not_yours'),
+            );
         }
 
         $log->increment('count');
 
         if ($log->code !== $code && ( ! config('verify.code.case_sensitive') && mb_strtolower($log->code) !== mb_strtolower($code))) {
-            return [
-                'success' => false,
-                'message' => trans('verify::verify.code_is_wrong'),
-            ];
+            return new VerificationResponse(
+                false,
+                trans('verify::verify.code_is_wrong'),
+            );
         }
 
         $log->update(['count' => 2147483647]);
         $log->save();
-
-        return ['success' => true, 'message' => trans('verify::verify.verified_successfully')];
+        return new VerificationResponse(
+            true,
+            trans('verify::verify.verified_successfully'),
+        );
     }
 
     /**
@@ -131,13 +135,11 @@ class Verify
 
         if ($latestLog->created_at->gt(now()->subSeconds(config('verify.resend_delay')))) {
             $waitTime = config('verify.resend_delay') - $latestLog->created_at->diffInSeconds();
-            return [
-                'success' => false,
-                'message' => trans('verify::verify.resend_wait', [
-                    'seconds' => config('verify.resend_delay') - $latestLog->created_at->diffInSeconds()
-                ]),
-                'seconds' => config('verify.resend_delay') - $latestLog->created_at->diffInSeconds()
-            ];
+            return new VerificationResponse(
+                false,
+                trans('verify::verify.resend_wait', ['seconds' => $waitTime]),
+                $waitTime
+            );
         }
 
         $numberOfRequests = VerifyLog::where('created_at', '>', now()->subHour())
@@ -146,14 +148,15 @@ class Verify
             })
             ->count();
         if ($numberOfRequests > config('verify.max_resends.per_ip')) {
-            return ['success' => false, 'message' => trans('verify::verify.too_many_requests')];
+            return new VerificationResponse(false, trans('verify::verify.too_many_requests'));
         }
 
         $sanjabVerifySession = session('sanjab_verify') ?: [];
-        $recentRequests      =  array_filter($sanjabVerifySession, fn ($time) => $time > time() - 3600);
+        $recentRequests =  array_filter($sanjabVerifySession, function ($time) {
+                return $time > time() - 3600;
+            });
         if (count($recentRequests) > config('verify.max_resends.per_session')) {
-            return ['success' => false, 'message' => trans('verify::verify.too_many_requests')];
-            ;
+            return new VerificationResponse(false, trans('verify::verify.too_many_requests'));
         }
 
         return null;
