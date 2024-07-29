@@ -16,99 +16,103 @@ class VerifyTest extends TestCase
 {
     public function testSend()
     {
-        App::instance('sanjab_test_result', false);
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.send_failed'));
+        $this->freezeTime(function () {
+            App::instance('sanjab_test_result', false);
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertFalse($result['success']);
+            $this->assertEquals($result['message'], trans('verify::verify.send_failed'));
 
-        App::instance('sanjab_test_result', true);
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
+            App::instance('sanjab_test_result', true);
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertTrue($result['success']);
 
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.resend_wait', ['seconds' => 120]));
-        VerifyLog::query()->update(['created_at' => now()->subMinutes(3)]);
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertFalse($result['success']);
+            $this->assertEquals($result['message'], trans('verify::verify.resend_wait', ['seconds' => 120]));
+            VerifyLog::query()->update(['created_at' => now()->subMinutes(3)]);
 
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertTrue($result['success']);
 
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.resend_wait', ['seconds' => 120]));
-        VerifyLog::query()->update(['created_at' => now()->subMinutes(3)]);
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertFalse($result['success']);
+            $this->assertEquals($result['message'], trans('verify::verify.resend_wait', ['seconds' => 120]));
+            VerifyLog::query()->update(['created_at' => now()->subMinutes(3)]);
 
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.too_many_requests'));
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertFalse($result['success']);
+            $this->assertEquals($result['message'], trans('verify::verify.too_many_requests'));
 
-        Session::flush();
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
-        VerifyLog::query()->update(['created_at' => now()->subMinutes(3)]);
+            Session::flush();
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertTrue($result['success']);
+            VerifyLog::query()->update(['created_at' => now()->subMinutes(3)]);
 
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.too_many_requests'));
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertFalse($result['success']);
+            $this->assertEquals($result['message'], trans('verify::verify.too_many_requests'));
+        });
     }
 
     public function testVerify()
     {
-        App::instance('sanjab_test_result', true);
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
+        $this->freezeTime(function () {
+            App::instance('sanjab_test_result', true);
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertTrue($result['success']);
 
-        $this->assertTrue(Validator::make(
-            ['code' => rand(100, 999), 'reciver' => ''],
-            ['code' => 'required|sanjab_verify:reciver']
-        )->fails());
+            $this->assertTrue(Validator::make(
+                ['code' => rand(100, 999), 'reciver' => ''],
+                ['code' => 'required|sanjab_verify:reciver']
+            )->fails());
 
-        $this->assertTrue(Validator::make(
-            ['code' => rand(100, 999), 'reciver' => '1234567890'],
-            ['code' => 'required|sanjab_verify:reciver']
-        )->fails());
+            $this->assertTrue(Validator::make(
+                ['code' => rand(100, 999), 'reciver' => '1234567890'],
+                ['code' => 'required|sanjab_verify:reciver']
+            )->fails());
 
-        $this->assertFalse(Validator::make(
-            ['code' => app('sanjab_test')['code'], 'reciver' => '1234567890'],
-            ['code' => 'required|sanjab_verify:reciver']
-        )->fails());
+            $this->assertFalse(Validator::make(
+                ['code' => app('sanjab_test')['code'], 'reciver' => '1234567890'],
+                ['code' => 'required|sanjab_verify:reciver']
+            )->fails());
 
-        $this->assertTrue(Validator::make(
-            ['code' => app('sanjab_test')['code'], 'reciver' => '1234567890'],
-            ['code' => 'required|sanjab_verify:reciver']
-        )->fails());
+            $this->assertTrue(Validator::make(
+                ['code' => app('sanjab_test')['code'], 'reciver' => '1234567890'],
+                ['code' => 'required|sanjab_verify:reciver']
+            )->fails());
 
-        VerifyLog::query()->delete();
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
+            VerifyLog::query()->delete();
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertTrue($result['success']);
 
-        foreach (range(0, 2) as $range) {
+            foreach (range(0, 2) as $range) {
+                $result = Verify::verify('1234567890', rand(100, 900));
+                $this->assertFalse($result['success']);
+                $this->assertEquals($result['message'], trans('verify::verify.code_is_wrong'));
+            }
+
             $result = Verify::verify('1234567890', rand(100, 900));
             $this->assertFalse($result['success']);
-            $this->assertEquals($result['message'], trans('verify::verify.code_is_wrong'));
-        }
+            $this->assertEquals($result['message'], trans('verify::verify.code_attempt_limited', ['count' => config('verify.max_attemps')]));
 
-        $result = Verify::verify('1234567890', rand(100, 900));
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.code_attempt_limited', ['count' => config('verify.max_attemps')]));
+            VerifyLog::query()->delete();
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertTrue($result['success']);
+            VerifyLog::latest()->update(['created_at' => now()->subHour(1)]);
 
-        VerifyLog::query()->delete();
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
-        VerifyLog::latest()->update(['created_at' => now()->subHour(1)]);
+            $result = Verify::verify('1234567890', app('sanjab_test')['code']);
+            $this->assertFalse($result['success']);
+            $this->assertEquals($result['message'], trans('verify::verify.code_expired'));
 
-        $result = Verify::verify('1234567890', app('sanjab_test')['code']);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.code_expired'));
+            VerifyLog::query()->delete();
+            $result = Verify::request('1234567890', TestVerifyMethod::class);
+            $this->assertTrue($result['success']);
+            request()->server->set('REMOTE_ADDR', '1.2.3.4');
 
-        VerifyLog::query()->delete();
-        $result = Verify::request('1234567890', TestVerifyMethod::class);
-        $this->assertTrue($result['success']);
-        request()->server->set('REMOTE_ADDR', '1.2.3.4');
-
-        $result = Verify::verify('1234567890', app('sanjab_test')['code']);
-        $this->assertFalse($result['success']);
-        $this->assertEquals($result['message'], trans('verify::verify.code_is_not_yours'));
+            $result = Verify::verify('1234567890', app('sanjab_test')['code']);
+            $this->assertFalse($result['success']);
+            $this->assertEquals($result['message'], trans('verify::verify.code_is_not_yours'));
+        });
     }
 
     public function testInvalidVerifyMethod()
