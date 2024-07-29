@@ -33,4 +33,4 @@ jobs:
           max_attempts: 5
           command: composer update --prefer-dist --no-interaction --no-progress
       - name: Execute tests
-        run: vendor/bin/phpunit --coverage-clover=coverage.clover --verbose && bash <(curl -s https://codecov.io/bash)
+        run: vendor/bin/phpunit --coverage-clover=coverage.clover && bash <(curl -s https://codecov.io/bash)
