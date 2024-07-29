@@ -26,9 +26,9 @@ class Verify
                 return [
                     'success' => false,
                     'message' => trans('verify::verify.resend_wait', [
-                        'seconds' => config('verify.resend_delay') - $lastestLog->created_at->diffInSeconds()
+                        'seconds' => intval(config('verify.resend_delay') - $lastestLog->created_at->diffInSeconds())
                     ]),
-                    'seconds' => config('verify.resend_delay') - $lastestLog->created_at->diffInSeconds()
+                    'seconds' => intval(config('verify.resend_delay') - $lastestLog->created_at->diffInSeconds())
                 ];
             }
             if (VerifyLog::where('created_at', '>', now()->subHour())
