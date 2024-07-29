@@ -17,11 +17,11 @@
     ],
     "require": {
         "php": "^7.3|^8",
-        "illuminate/support": "^6|^7|^8|^9|^10"
+        "illuminate/support": "^6|^7|^8|^9|^10|^11"
     },
     "require-dev": {
-        "orchestra/testbench": "3.8.*|^4|^5.1|^7.4|^8.0.4",
-        "phpunit/phpunit": "^8.4|^9.0|^10.0"
+        "orchestra/testbench": "3.8.*|^4|^5.1|^7.4|^8.0.4|v9.0.0",
+        "phpunit/phpunit": "^8.4|^9.0|^10.0|^11.0"
     },
     "autoload": {
         "psr-4": {
@@ -35,8 +35,10 @@
     },
     "scripts": {
         "test": "vendor/bin/phpunit",
-        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
-
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "post-autoload-dump": [
+            "@php vendor/bin/testbench package:discover"
+        ]
     },
     "config": {
         "sort-packages": true,
